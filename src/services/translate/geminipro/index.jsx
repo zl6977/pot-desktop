@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 import { Language } from './info';
 
 export async function translate(text, from, to, options = {}) {
@@ -103,8 +103,8 @@ export async function translate(text, from, to, options = {}) {
     } else {
         let res = await fetch(requestPath, {
             method: 'POST',
-            headers: headers,
-            body: Body.json(body),
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
         });
 
         if (res.ok) {

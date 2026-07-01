@@ -1,4 +1,5 @@
 use log::info;
+use crate::config::APP_ID;
 
 #[tauri::command]
 pub fn screenshot(x: i32, y: i32) {
@@ -12,9 +13,9 @@ pub fn screenshot(x: i32, y: i32) {
         let info = screen.display_info;
         info!("Screen: {:?}", info);
         if info.x == x && info.y == y {
-            let handle = APP.get().unwrap();
+            let _handle = APP.get().unwrap();
             let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-            app_cache_dir_path.push(&handle.config().tauri.bundle.identifier);
+            app_cache_dir_path.push(APP_ID);
             if !app_cache_dir_path.exists() {
                 // 创建目录
                 fs::create_dir_all(&app_cache_dir_path).expect("Create Cache Dir Failed");

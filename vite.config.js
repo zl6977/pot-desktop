@@ -5,6 +5,11 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
     plugins: [react()],
+    resolve: {
+        alias: {
+            '@tauri-apps/plugin-http': resolve(__dirname, 'src/utils/http.js'),
+        },
+    },
 
     // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
     // prevent vite from obscuring rust errors

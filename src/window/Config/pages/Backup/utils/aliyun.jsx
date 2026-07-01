@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api';
-import { Body, fetch } from '@tauri-apps/api/http';
+import { invoke } from '@tauri-apps/api/core';
+import { fetch } from '@tauri-apps/plugin-http';
 import { appConfigDir, join } from '@tauri-apps/api/path';
 
 export async function backup(token, name) {
@@ -18,7 +18,7 @@ export async function backup(token, name) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             file_id,
             upload_id,
@@ -34,7 +34,7 @@ export async function list(token) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             parent_file_id: dir_id,
             type: 'file',
@@ -75,7 +75,7 @@ export async function remove(token, name) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             file_id,
         }),
@@ -95,7 +95,7 @@ export async function remove(token, name) {
 export async function qrcode() {
     const res = await fetch('https://openapi.alipan.com/oauth/authorize/qrcode', {
         method: 'POST',
-        body: Body.json({
+        body: JSON.stringify({
             client_id: 'bf56dd2dc03a4d3489e3dda05dd6d466',
             scopes: ['user:base', 'file:all:read', 'file:all:write'],
         }),
@@ -163,7 +163,7 @@ export async function userInfo(token) {
 export async function accessToken(code) {
     const res = await fetch('https://pot-app.com/api/ali_access_token', {
         method: 'POST',
-        body: Body.json({
+        body: JSON.stringify({
             code,
             refresh_token: '',
         }),
@@ -215,7 +215,7 @@ async function createDir(token, drive_id) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             parent_file_id: 'root',
             name: 'pot-app',
@@ -246,7 +246,7 @@ async function createFile(token, drive_id, dir_id, name) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             parent_file_id: dir_id,
             name: name,
@@ -280,7 +280,7 @@ async function getFileByPath(token, drive_id, name) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             file_path: `/pot-app/${name}`,
         }),
@@ -308,7 +308,7 @@ async function getDownloadUrl(token, drive_id, file_id) {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: Body.json({
+        body: JSON.stringify({
             drive_id,
             file_id,
         }),

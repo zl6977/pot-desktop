@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 
 export async function recognize(base64, language, options = {}) {
     const { config } = options;
@@ -32,7 +32,7 @@ export async function recognize(base64, language, options = {}) {
                 query: {
                     access_token: token,
                 },
-                body: Body.form({
+                body: new URLSearchParams({
                     language_type: language,
                     detect_direction: 'false',
                     image: base64,

@@ -1,3 +1,4 @@
+use crate::config::APP_ID;
 use crate::error::Error;
 use dirs::config_dir;
 use log::info;
@@ -7,7 +8,7 @@ use walkdir::WalkDir;
 use zip::read::ZipArchive;
 use zip::write::SimpleFileOptions;
 
-#[tauri::command(async)]
+#[tauri::command]
 pub async fn webdav(
     operate: &str,
     url: String,
@@ -35,7 +36,7 @@ pub async fn webdav(
             let res = client.get(&format!("/{}", name.unwrap())).await?;
             let data = res.bytes().await?;
             let mut config_dir_path = config_dir().unwrap();
-            config_dir_path = config_dir_path.join("com.pot-app.desktop");
+            config_dir_path = config_dir_path.join(APP_ID);
             let zip_path = config_dir_path.join("archive.zip");
 
             let mut zip_file = std::fs::File::create(&zip_path)?;
@@ -52,7 +53,7 @@ pub async fn webdav(
                     return Err(Error::Error("WebDav Get Config Dir Error".into()));
                 }
             };
-            config_dir_path = config_dir_path.join("com.pot-app.desktop");
+            config_dir_path = config_dir_path.join(APP_ID);
             let zip_path = config_dir_path.join("archive.zip");
             let config_path = config_dir_path.join("config.json");
             let database_path = config_dir_path.join("history.db");
@@ -112,7 +113,7 @@ pub async fn webdav(
     }
 }
 
-#[tauri::command(async)]
+#[tauri::command]
 pub async fn local(operate: &str, path: String) -> Result<String, Error> {
     match operate {
         "put" => {
@@ -122,7 +123,7 @@ pub async fn local(operate: &str, path: String) -> Result<String, Error> {
                     return Err(Error::Error("WebDav Get Config Dir Error".into()));
                 }
             };
-            config_dir_path = config_dir_path.join("com.pot-app.desktop");
+            config_dir_path = config_dir_path.join(APP_ID);
             let config_path = config_dir_path.join("config.json");
             let database_path = config_dir_path.join("history.db");
             let plugin_path = config_dir_path.join("plugins");
@@ -160,7 +161,7 @@ pub async fn local(operate: &str, path: String) -> Result<String, Error> {
         }
         "get" => {
             let mut config_dir_path = config_dir().unwrap();
-            config_dir_path = config_dir_path.join("com.pot-app.desktop");
+            config_dir_path = config_dir_path.join(APP_ID);
 
             let mut zip_file = std::fs::File::open(&path)?;
             let mut zip = ZipArchive::new(&mut zip_file)?;
@@ -175,7 +176,7 @@ pub async fn local(operate: &str, path: String) -> Result<String, Error> {
     }
 }
 
-#[tauri::command(async)]
+#[tauri::command]
 pub async fn aliyun(operate: &str, path: String, url: String) -> Result<String, Error> {
     match operate {
         "put" => {
@@ -190,7 +191,7 @@ pub async fn aliyun(operate: &str, path: String, url: String) -> Result<String, 
             let res = reqwest::Client::new().get(&url).send().await?;
             let data = res.bytes().await?;
             let mut config_dir_path = config_dir().unwrap();
-            config_dir_path = config_dir_path.join("com.pot-app.desktop");
+            config_dir_path = config_dir_path.join(APP_ID);
             let zip_path = config_dir_path.join("archive.zip");
 
             let mut zip_file = std::fs::File::create(&zip_path)?;

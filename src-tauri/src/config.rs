@@ -2,27 +2,30 @@ use crate::{error::Error, APP};
 use dirs::config_dir;
 use log::{info, warn};
 use serde_json::{json, Value};
-use std::sync::Mutex;
-use tauri::{Manager, Wry};
-use tauri_plugin_store::{Store, StoreBuilder};
+use std::sync::Arc;
+use tauri::Manager;
+use tauri_plugin_store::StoreBuilder;
 
-pub struct StoreWrapper(pub Mutex<Store<Wry>>);
+pub struct StoreWrapper(pub Arc<tauri_plugin_store::Store<tauri::Wry>>);
+
+/// App bundle identifier - avoids config API changes between Tauri 1.x and 2.x
+pub const APP_ID: &str = "com.pot-app.desktop";
 
 pub fn init_config(app: &mut tauri::App) {
     let config_path = config_dir().unwrap();
-    let config_path = config_path.join(app.config().tauri.bundle.identifier.clone());
+    let config_path = config_path.join(APP_ID);
     let config_path = config_path.join("config.json");
     info!("Load config from: {:?}", config_path);
-    let mut store = StoreBuilder::new(app.handle(), config_path).build();
+    let store = StoreBuilder::new(app.handle(), config_path).build().unwrap();
 
-    match store.load() {
+    match store.reload() {
         Ok(_) => info!("Config loaded"),
         Err(e) => {
             warn!("Config load error: {:?}", e);
             info!("Config not found, creating new config");
         }
     }
-    app.manage(StoreWrapper(Mutex::new(store)));
+    app.manage(StoreWrapper(store));
     let _ = check_service_available();
 }
 
@@ -138,13 +141,11 @@ pub fn check_service_available() -> Result<(), Error> {
 }
 
 pub fn get_plugin_list(plugin_type: &str) -> Option<Vec<String>> {
-    let app_handle = APP.get().unwrap();
     let config_dir = dirs::config_dir()?;
-    let config_dir = config_dir.join(app_handle.config().tauri.bundle.identifier.clone());
+    let config_dir = config_dir.join(APP_ID);
     let plugin_dir = config_dir.join("plugins");
     let plugin_dir = plugin_dir.join(plugin_type);
 
-    // dirs in plugin_dir
     let mut plugin_list = vec![];
     if plugin_dir.exists() {
         let read_dir = std::fs::read_dir(plugin_dir).ok()?;
@@ -156,7 +157,6 @@ pub fn get_plugin_list(plugin_type: &str) -> Option<Vec<String>> {
                 if name.starts_with("plugin") {
                     plugin_list.push(name);
                 } else {
-                    // Remove old plugin
                     let _ = std::fs::remove_dir_all(entry.path());
                 }
             }
@@ -167,22 +167,16 @@ pub fn get_plugin_list(plugin_type: &str) -> Option<Vec<String>> {
 
 pub fn get(key: &str) -> Option<Value> {
     let state = APP.get().unwrap().state::<StoreWrapper>();
-    let store = state.0.lock().unwrap();
-    match store.get(key) {
-        Some(value) => Some(value.clone()),
-        None => None,
-    }
+    state.0.get(key)
 }
 
 pub fn set<T: serde::ser::Serialize>(key: &str, value: T) {
     let state = APP.get().unwrap().state::<StoreWrapper>();
-    let mut store = state.0.lock().unwrap();
-    store.insert(key.to_string(), json!(value)).unwrap();
-    store.save().unwrap();
+    state.0.set(key.to_string(), json!(value));
+    let _ = state.0.save();
 }
 
 pub fn is_first_run() -> bool {
     let state = APP.get().unwrap().state::<StoreWrapper>();
-    let store = state.0.lock().unwrap();
-    store.is_empty()
+    state.0.is_empty()
 }

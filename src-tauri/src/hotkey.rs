@@ -2,11 +2,11 @@ use crate::config::{get, set};
 use crate::window::{input_translate, ocr_recognize, ocr_translate, selection_translate};
 use crate::APP;
 use log::{info, warn};
-use tauri::{AppHandle, GlobalShortcutManager};
+use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
-fn register<F>(app_handle: &AppHandle, name: &str, handler: F, key: &str) -> Result<(), String>
+fn register<F>(app_handle: &tauri::AppHandle, name: &str, handler: F, key: &str) -> Result<(), String>
 where
-    F: Fn() + Send + 'static,
+    F: Fn() + Send + Sync + 'static,
 {
     let hotkey = {
         if key.is_empty() {
@@ -24,8 +24,10 @@ where
 
     if !hotkey.is_empty() {
         match app_handle
-            .global_shortcut_manager()
-            .register(hotkey.as_str(), handler)
+            .global_shortcut()
+            .on_shortcut(hotkey.as_str(), move |_app, _shortcut, _event| {
+                handler();
+            })
         {
             Ok(()) => {
                 info!("Registered global shortcut: {} for {}", hotkey, name);
@@ -39,7 +41,6 @@ where
     Ok(())
 }
 
-// Register global shortcuts
 pub fn register_shortcut(shortcut: &str) -> Result<(), String> {
     let app_handle = APP.get().unwrap();
     match shortcut {
@@ -52,8 +53,12 @@ pub fn register_shortcut(shortcut: &str) -> Result<(), String> {
         "hotkey_input_translate" => {
             register(app_handle, "hotkey_input_translate", input_translate, "")?
         }
-        "hotkey_ocr_recognize" => register(app_handle, "hotkey_ocr_recognize", ocr_recognize, "")?,
-        "hotkey_ocr_translate" => register(app_handle, "hotkey_ocr_translate", ocr_translate, "")?,
+        "hotkey_ocr_recognize" => {
+            register(app_handle, "hotkey_ocr_recognize", ocr_recognize, "")?
+        }
+        "hotkey_ocr_translate" => {
+            register(app_handle, "hotkey_ocr_translate", ocr_translate, "")?
+        }
         "all" => {
             register(
                 app_handle,

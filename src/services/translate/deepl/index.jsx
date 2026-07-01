@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 
 export async function translate(text, from, to, options = {}) {
     const { config } = options;
@@ -43,7 +43,7 @@ async function translate_by_free(text, from, to) {
 
     let res = await fetch(url, {
         method: 'POST',
-        body: Body.text(body_str),
+        body: body_str,
         headers: { 'Content-Type': 'application/json' },
     });
 
@@ -65,7 +65,7 @@ async function translate_by_free(text, from, to) {
 async function translate_by_deeplx(text, from, to, url) {
     let res = await fetch(url, {
         method: 'POST',
-        body: Body.json({
+        body: JSON.stringify({
             source_lang: from,
             target_lang: to,
             text: text,
@@ -106,8 +106,8 @@ async function translate_by_key(text, from, to, key) {
     }
     let res = await fetch(url, {
         method: 'POST',
-        body: Body.json(body),
-        headers: headers,
+        body: JSON.stringify(body),
+        headers: { ...headers, 'Content-Type': 'application/json' },
     });
 
     if (res.ok) {

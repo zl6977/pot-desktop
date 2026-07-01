@@ -1,8 +1,9 @@
 use dirs::cache_dir;
+use crate::config::APP_ID;
 
-#[tauri::command(async)]
 #[cfg(target_os = "windows")]
-pub fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, String> {
+#[tauri::command]
+pub async fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, String> {
     use windows::core::HSTRING;
     use windows::Globalization::Language;
     use windows::Graphics::Imaging::BitmapDecoder;
@@ -10,7 +11,7 @@ pub fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, St
     use windows::Storage::{FileAccessMode, StorageFile};
 
     let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-    app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
+    app_cache_dir_path.push(APP_ID);
     app_cache_dir_path.push("pot_screenshot_cut.png");
 
     let path = app_cache_dir_path.to_string_lossy().replace("\\\\?\\", "");
@@ -60,20 +61,20 @@ pub fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, St
     }
 }
 
-#[tauri::command(async)]
 #[cfg(target_os = "macos")]
-pub fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, String> {
+#[tauri::command]
+pub async fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, String> {
     let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-    app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
+    app_cache_dir_path.push(APP_ID);
     app_cache_dir_path.push("pot_screenshot_cut.png");
 
     let arch = std::env::consts::ARCH;
     let bin_path = match app_handle
-        .path_resolver()
+        .path()
         .resolve_resource(format!("resources/ocr-{arch}-apple-darwin"))
     {
-        Some(v) => v,
-        None => return Err("Failed to resolve ocr binary".to_string()),
+        Ok(v) => v,
+        Err(_) => return Err("Failed to resolve ocr binary".to_string()),
     };
 
     match std::process::Command::new("chmod")
@@ -103,11 +104,11 @@ pub fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, St
     }
 }
 
-#[tauri::command(async)]
 #[cfg(target_os = "linux")]
-pub fn system_ocr(app_handle: tauri::AppHandle, lang: &str) -> Result<String, String> {
+#[tauri::command]
+pub async fn system_ocr(_app_handle: tauri::AppHandle, lang: &str) -> Result<String, String> {
     let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-    app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
+    app_cache_dir_path.push(APP_ID);
     app_cache_dir_path.push("pot_screenshot_cut.png");
     let mut args = ["", ""];
     if lang != "auto" {

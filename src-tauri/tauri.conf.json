@@ -1,84 +1,52 @@
 {
+    "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-utils/schema/schema.json",
+    "productName": "pot",
+    "version": "3.0.7",
+    "identifier": "com.pot-app.desktop",
     "build": {
         "beforeDevCommand": "pnpm dev",
         "beforeBuildCommand": "pnpm build",
-        "devPath": "http://localhost:1420",
-        "distDir": "../dist",
-        "withGlobalTauri": false
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist"
     },
-    "package": {
-        "productName": "pot",
-        "version": "3.0.7"
-    },
-    "tauri": {
-        "allowlist": {
-            "all": false,
-            "shell": {
-                "all": true,
-                "open": ".*"
-            },
-            "path": {
-                "all": true
-            },
-            "window": {
-                "all": true
-            },
-            "clipboard": {
-                "all": true
-            },
-            "globalShortcut": {
-                "all": true
-            },
-            "notification": {
-                "all": true
-            },
-            "http": {
-                "all": true,
-                "request": true,
-                "scope": [
-                    "http://**",
-                    "https://**"
-                ]
-            },
-            "os": {
-                "all": true
-            },
-            "protocol": {
-                "asset": true,
-                "assetScope": [
-                    "$CACHE/**",
-                    "$CONFIG/**"
-                ]
-            },
-            "fs": {
-                "all": true,
-                "scope": [
-                    "$APPCONFIG/**",
-                    "$APPCACHE/**"
-                ]
-            },
-            "dialog": {
-                "open": true,
-                "save": true
+    "app": {
+        "windows": [
+            {
+                "title": "Daemon",
+                "label": "daemon",
+                "visible": false,
+                "url": "daemon.html",
+                "additionalBrowserArgs": "--disable-web-security"
             }
+        ],
+        "security": {
+            "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
+            "capabilities": [
+                "main-capability"
+            ]
         },
-        "bundle": {
-            "active": true,
-            "category": "Utility",
-            "copyright": "GPLv3",
-            "targets": "all",
-            "identifier": "com.pot-app.desktop",
-            "longDescription": "A cross-platform text translation and ocr software",
-            "shortDescription": "Pot App",
-            "externalBin": [],
-            "resources": [],
-            "icon": [
-                "icons/32x32.png",
-                "icons/128x128.png",
-                "icons/128x128@2x.png",
-                "icons/icon.icns",
-                "icons/icon.ico"
-            ],
+        "trayIcon": {
+            "iconPath": "icons/icon.png",
+            "iconAsTemplate": true
+        }
+    },
+    "bundle": {
+        "active": true,
+        "category": "Utility",
+        "copyright": "GPLv3",
+        "targets": "all",
+        "longDescription": "A cross-platform text translation and ocr software",
+        "shortDescription": "Pot App",
+        "externalBin": [],
+        "resources": [],
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "linux": {
             "deb": {
                 "depends": [
                     "libxdo-dev",
@@ -94,35 +62,18 @@
                     "libxrandr2",
                     "tesseract-ocr"
                 ]
-            },
-            "macOS": {
-                "entitlements": null,
-                "exceptionDomain": "",
-                "frameworks": [],
-                "providerShortName": null,
-                "signingIdentity": null
             }
         },
-        "security": {
-            "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
-            "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';"
-        },
-        "windows": [
-            {
-                "title": "Daemon",
-                "label": "daemon",
-                "visible": false,
-                "url": "daemon.html",
-                "additionalBrowserArgs": "--disable-web-security"
-            }
-        ],
-        "systemTray": {
-            "iconPath": "icons/icon.png",
-            "iconAsTemplate": true
-        },
+        "macOS": {
+            "entitlements": null,
+            "exceptionDomain": "",
+            "frameworks": [],
+            "providerShortName": null,
+            "signingIdentity": null
+        }
+    },
+    "plugins": {
         "updater": {
-            "active": true,
-            "dialog": false,
             "endpoints": [
                 "https://dl.pot-app.com/https://github.com/pot-app/pot-desktop/releases/download/updater/update.json",
                 "https://github.com/pot-app/pot-desktop/releases/download/updater/update.json"

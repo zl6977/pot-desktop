@@ -1,8 +1,8 @@
 import { Code, Card, CardBody, Button, Progress, Skeleton } from '@nextui-org/react';
-import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
+import { check } from '@tauri-apps/plugin-updater';
 import React, { useEffect, useState } from 'react';
-import { appWindow } from '@tauri-apps/api/window';
-import { relaunch } from '@tauri-apps/api/process';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'; import { currentMonitor } from '@tauri-apps/api/window';
+import { relaunch } from '@tauri-apps/plugin-process';
 import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { listen } from '@tauri-apps/api/event';
@@ -19,17 +19,19 @@ export default function Updater() {
     const [downloaded, setDownloaded] = useState(0);
     const [total, setTotal] = useState(0);
     const [body, setBody] = useState('');
+    const [updateObj, setUpdateObj] = useState(null);
     const { t } = useTranslation();
     const toastStyle = useToastStyle();
 
     useEffect(() => {
-        if (appWindow.label === 'updater') {
-            appWindow.show();
+        if (getCurrentWebviewWindow().label === 'updater') {
+            getCurrentWebviewWindow().show();
         }
-        checkUpdate().then(
+        check().then(
             (update) => {
-                if (update.shouldUpdate) {
-                    setBody(update.manifest.body);
+                if (update) {
+                    setUpdateObj(update);
+                    setBody(update.body || '');
                 } else {
                     setBody(t('updater.latest'));
                 }
@@ -156,15 +158,17 @@ export default function Updater() {
                     isDisabled={downloaded !== 0}
                     color='primary'
                     onPress={() => {
-                        installUpdate().then(
-                            () => {
-                                toast.success(t('updater.installed'), { style: toastStyle, duration: 10000 });
-                                relaunch();
-                            },
-                            (e) => {
-                                toast.error(e.toString(), { style: toastStyle });
-                            }
-                        );
+                        if (updateObj) {
+                            updateObj.downloadAndInstall().then(
+                                () => {
+                                    toast.success(t('updater.installed'), { style: toastStyle, duration: 10000 });
+                                    relaunch();
+                                },
+                                (e) => {
+                                    toast.error(e.toString(), { style: toastStyle });
+                                }
+                            );
+                        }
                     }}
                 >
                     {downloaded !== 0
@@ -177,7 +181,7 @@ export default function Updater() {
                     variant='flat'
                     color='danger'
                     onPress={() => {
-                        appWindow.close();
+                        getCurrentWebviewWindow().close();
                     }}
                 >
                     {t('updater.cancel')}

@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function translate(text, from, to) {
@@ -12,7 +12,7 @@ export async function translate(text, from, to) {
             id: uuidv4().replaceAll('-', '') + '-0-0',
             srv: 'android',
         },
-        body: Body.form({
+        body: new URLSearchParams({
             source_lang: from,
             target_lang: to,
             text,

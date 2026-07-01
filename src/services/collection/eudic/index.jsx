@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 
 export async function collection(source, target, options = {}) {
     const { config } = options;
@@ -35,7 +35,7 @@ async function checkCategory(name, token) {
                 'Content-Type': 'application/json',
                 Authorization: token,
             },
-            body: Body.json({
+            body: JSON.stringify({
                 language: 'en',
                 name: name,
             }),
@@ -58,7 +58,7 @@ async function addWordToCategory(id, word, token) {
             'Content-Type': 'application/json',
             Authorization: token,
         },
-        body: Body.json({
+        body: JSON.stringify({
             id: id,
             language: 'en',
             words: [word],

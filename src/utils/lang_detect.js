@@ -1,5 +1,5 @@
-import { fetch, Body } from '@tauri-apps/api/http';
-import { invoke } from '@tauri-apps/api';
+import { fetch } from '@tauri-apps/plugin-http';
+import { invoke } from '@tauri-apps/api/core';
 import { store } from './store';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -34,7 +34,7 @@ async function baidu_detect(text) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: Body.form({
+        body: new URLSearchParams({
             query: text,
         }),
     });
@@ -74,7 +74,7 @@ async function tencent_detect(text) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: Body.form({
+        body: new URLSearchParams({
             sourceText: text,
         }),
     });

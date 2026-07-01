@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 import { store } from '../../../utils/store';
 
 export async function collection(source, target, options = {}) {
@@ -13,7 +13,8 @@ export async function collection(source, target, options = {}) {
     async function ankiConnect(action, version, params = {}) {
         let res = await fetch(`http://127.0.0.1:${port}`, {
             method: 'POST',
-            body: Body.json({ action, version, params }),
+            body: JSON.stringify({ action, version, params }),
+                        headers: { 'Content-Type': 'application/json' },
         });
         return res.data;
     }

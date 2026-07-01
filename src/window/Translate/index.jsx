@@ -1,8 +1,8 @@
-import { readDir, BaseDirectory, readTextFile, exists } from '@tauri-apps/api/fs';
+import { readDir, BaseDirectory, readTextFile, exists } from '@tauri-apps/plugin-fs';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { appWindow, currentMonitor } from '@tauri-apps/api/window';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'; import { currentMonitor } from '@tauri-apps/api/window';
 import { appConfigDir, join } from '@tauri-apps/api/path';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import { Spacer, Button } from '@nextui-org/react';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import React, { useState, useEffect } from 'react';
@@ -15,7 +15,7 @@ import TargetArea from './components/TargetArea';
 import { osType } from '../../utils/env';
 import { useConfig } from '../../hooks';
 import { store } from '../../utils/store';
-import { info } from 'tauri-plugin-log-api';
+import { info } from '@tauri-apps/plugin-log';
 
 let blurTimeout = null;
 let resizeTimeout = null;
@@ -23,7 +23,7 @@ let moveTimeout = null;
 
 const listenBlur = () => {
     return listen('tauri://blur', () => {
-        if (appWindow.label === 'translate') {
+        if (getCurrentWebviewWindow().label === 'translate') {
             if (blurTimeout) {
                 clearTimeout(blurTimeout);
             }
@@ -32,7 +32,7 @@ const listenBlur = () => {
             // 如果直接关闭将导致窗口无法拖动
             blurTimeout = setTimeout(async () => {
                 info('Confirm Blur');
-                await appWindow.close();
+                await getCurrentWebviewWindow().close();
             }, 100);
         }
     });
@@ -104,7 +104,7 @@ export default function Translate() {
     // 是否默认置顶
     useEffect(() => {
         if (alwaysOnTop !== null && alwaysOnTop) {
-            appWindow.setAlwaysOnTop(true);
+            getCurrentWebviewWindow().setAlwaysOnTop(true);
             unlistenBlur();
             setPined(true);
         }
@@ -117,8 +117,8 @@ export default function Translate() {
                     clearTimeout(moveTimeout);
                 }
                 moveTimeout = setTimeout(async () => {
-                    if (appWindow.label === 'translate') {
-                        let position = await appWindow.outerPosition();
+                    if (getCurrentWebviewWindow().label === 'translate') {
+                        let position = await getCurrentWebviewWindow().outerPosition();
                         const monitor = await currentMonitor();
                         const factor = monitor.scaleFactor;
                         position = position.toLogical(factor);
@@ -143,8 +143,8 @@ export default function Translate() {
                     clearTimeout(resizeTimeout);
                 }
                 resizeTimeout = setTimeout(async () => {
-                    if (appWindow.label === 'translate') {
-                        let size = await appWindow.outerSize();
+                    if (getCurrentWebviewWindow().label === 'translate') {
+                        let size = await getCurrentWebviewWindow().outerSize();
                         const monitor = await currentMonitor();
                         const factor = monitor.scaleFactor;
                         size = size.toLogical(factor);
@@ -251,10 +251,10 @@ export default function Translate() {
                                 if (closeOnBlur) {
                                     unlisten = listenBlur();
                                 }
-                                appWindow.setAlwaysOnTop(false);
+                                getCurrentWebviewWindow().setAlwaysOnTop(false);
                             } else {
                                 unlistenBlur();
-                                appWindow.setAlwaysOnTop(true);
+                                getCurrentWebviewWindow().setAlwaysOnTop(true);
                             }
                             setPined(!pined);
                         }}
@@ -268,7 +268,7 @@ export default function Translate() {
                         disableAnimation
                         className={`my-auto ${osType === 'Darwin' && 'hidden'} bg-transparent`}
                         onPress={() => {
-                            void appWindow.close();
+                            void getCurrentWebviewWindow().close();
                         }}
                     >
                         <AiFillCloseCircle className='text-[20px] text-default-400' />

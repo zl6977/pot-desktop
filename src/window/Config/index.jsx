@@ -1,6 +1,6 @@
 import { useLocation, useRoutes } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'; import { currentMonitor } from '@tauri-apps/api/window';
 import { Card, Divider } from '@nextui-org/react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,8 +18,8 @@ export default function Config() {
     const page = useRoutes(routes);
 
     useEffect(() => {
-        if (appWindow.label === 'config') {
-            appWindow.show();
+        if (getCurrentWebviewWindow().label === 'config') {
+            getCurrentWebviewWindow().show();
         }
     }, []);
 
